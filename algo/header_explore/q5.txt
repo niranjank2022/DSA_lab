@@ -1,0 +1,135 @@
+// vector.h
+
+#ifndef VECTOR_H
+#define VECTOR_H
+struct vector {
+    int *arr;
+    int length;
+    int _size;
+};
+
+typedef struct vector Vector;
+
+Vector init( void );
+void vprint( Vector * );
+void vappend( Vector *, int );
+void vinsert( Vector *, int, int );
+int vpop( Vector * );
+int vremove( Vector *, int );
+
+#include "vector.c"
+#endif
+
+
+// vector.c
+#include <stdio.h>
+#include <stdlib.h>
+#define DEFAULT_SIZE 10
+Vector init() {
+    Vector vec;
+    vec.length = 0;
+    vec._size = DEFAULT_SIZE;
+    vec.arr = (int *) malloc(vec._size * sizeof(int));
+    return vec;
+}
+
+void vappend(Vector *vec, int val) {
+    vinsert(vec, vec->length, val);
+}
+
+int vpop(Vector *vec) {
+    vec->length--;
+    int valuePopped = vec->arr[vec->length];
+    return valuePopped;
+}
+
+void vinsert(Vector *vec, int i, int val) {
+    void grow(Vector *, int);
+    vec->length++;
+    if (vec->length == vec->_size)
+        grow(vec, i);
+    vec->arr[i] = val;
+}
+
+int vremove(Vector *vec, int index) {
+    vec->length--;
+
+    // Changing the size of vector
+    int removedValue = vec->arr[index];
+    int newSize = vec->_size;
+    if (vec->length <= (vec->_size - 1) * 2 / 3)
+        newSize = (vec->_size - 1) * 2 / 3;
+    vec->_size = newSize;
+    
+    // Copying elements before index to new location
+    int *newArr = (int *) malloc(newSize * sizeof(int));
+    for (int i = 0; i < index; i++)
+        newArr[i] = vec->arr[i];
+    
+    // Copying elements after index to new location
+    for (int i = index; i < vec->length; i++)
+        newArr[i] = vec->arr[i + 1];
+    
+    free(vec->arr);vec->arr = newArr;
+    return removedValue;
+}
+
+int vremove(Vector *vec, int index) {
+    vec->length--;
+    
+    // Changing the size of vector
+    int removedValue = vec->arr[index];
+    int newSize = vec->_size;
+    if (vec->length <= (vec->_size - 1) * 2 / 3)
+        newSize = (vec->_size - 1) * 2 / 3;
+    
+    vec->_size = newSize;
+
+    // Copying elements before index to new location
+    int *newArr = (int *) malloc(newSize * sizeof(int));
+    for (int i = 0; i < index; i++)
+        newArr[i] = vec->arr[i];
+    
+    // Copying elements after index to new location
+    for (int i = index; i < vec->length; i++)
+        newArr[i] = vec->arr[i + 1];
+    free(vec->arr);
+    vec->arr = newArr;
+    return removedValue;
+}
+
+// app.c
+
+#include <stdio.h>
+#include "vector.h"
+
+void main() {
+    Vector list = init();
+    vprint(&list);
+    vappend(&list, 67);
+    vappend(&list, 45);
+    vinsert(&list, 1, 100);
+    vprint(&list);
+    for (int i = 0; i < 10; i++)
+        vappend(&list, i * i * i);
+    
+    vprint(&list);
+    vpop(&list);
+    vremove(&list, 3);
+    vremove(&list, 4);
+    vprint(&list);
+}
+
+OUTPUT:
+
+Vector elements:
+
+
+Vector elements:
+67 100 0
+
+Vector elements:
+67 100 0 0 1 8 27 64 125 216 343 512 729
+
+Vector elements:
+67 100 0 1 27 64 125 216 343 512
